@@ -1,7 +1,9 @@
 <template>
     <div class="container">
-        <Header />
-        <AddTask @add-task="addTask" />
+        <Header @toggle-add-task="toggleAddTask" :showAddTask="showAddTask" />
+        <div v-if="showAddTask">
+            <AddTask @add-task="addTask" />
+        </div>
         <Tasks
             @toggle-reminder="toggleReminder"
             @delete-task="deleteTask"
@@ -25,9 +27,13 @@ export default {
     data() {
         return {
             tasks: [],
+            showAddTask: false,
         };
     },
     methods: {
+        toggleAddTask() {
+            this.showAddTask = !this.showAddTask;
+        },
         addTask(task) {
             this.tasks = [...this.tasks, task];
         },
@@ -41,28 +47,16 @@ export default {
                 task.id === id ? { ...task, reminder: !task.reminder } : task
             );
         },
+        async fetchTasks() {
+            const res = await fetch("http://localhost:5000/tasks");
+
+            const data = await res.json();
+
+            return data;
+        },
     },
-    created() {
-        this.tasks = [
-            {
-                id: 1,
-                text: "exercise",
-                day: "march 1st at 2:00 pm",
-                reminder: true,
-            },
-            {
-                id: 2,
-                text: "eat",
-                day: "march 1st at 2:00 pm",
-                reminder: true,
-            },
-            {
-                id: 3,
-                text: "sleep",
-                day: "march 1st at 2:00 pm",
-                reminder: false,
-            },
-        ];
+    async created() {
+        this.tasks = await this.fetchTasks();
     },
 };
 </script>
